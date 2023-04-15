@@ -1,0 +1,8 @@
+# constraints for fairseq, works with TTS as well
+numba>=0.56.2
+numpy>=1.23.0
+
+TTS
+
+ai4bharat-transliteration
+asteroid

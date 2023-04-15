@@ -16,14 +16,14 @@ from TTS.utils.synthesizer import Synthesizer
 from pydantic import BaseModel
 
 # IndicTrans
-from src.indicTrans.inference.engine import IndicTransModel
+from src.indicTrans.inference.engine import Model
 
 # Indic TTS
 from src.tts.inference import TextToSpeechEngine
 from src.tts.models.request import TTSRequest
 
 # En-Indic
-en2indic_model = IndicTransModel(expdir="models/en-indic")
+en2indic_model = Model(expdir="models/indic-trans/en-indic")
 
 TTS_SUPPORTED_LANGUAGES = {
     'as' : "Assamese - অসমীয়া",
@@ -48,13 +48,13 @@ INDIC_TTS_SUPPORTED_LANGUAGES = ["as", "hi", "mr", "ta", "bn", "kn", "or", "te",
 models = {}
 for lang in TTS_SUPPORTED_LANGUAGES:
     models[lang]  = Synthesizer(
-        tts_checkpoint=f'models/tts/{lang}/fastpitch/best_model.pth',
-        tts_config_path=f'models/tts/{lang}/fastpitch/config.json',
-        tts_speakers_file=f'models/tts/{lang}/fastpitch/speakers.pth',
+        tts_checkpoint=f'models/v1/{lang}/fastpitch/best_model.pth',
+        tts_config_path=f'models/v1/{lang}/fastpitch/config.json',
+        tts_speakers_file=f'models/v1/{lang}/fastpitch/speakers.pth',
         # tts_speakers_file=None,
         tts_languages_file=None,
-        vocoder_checkpoint=f'models/tts/{lang}/hifigan/best_model.pth',
-        vocoder_config=f'models/tts/{lang}/hifigan/config.json',
+        vocoder_checkpoint=f'models/v1/{lang}/hifigan/best_model.pth',
+        vocoder_config=f'models/v1/{lang}/hifigan/config.json',
         encoder_checkpoint="",
         encoder_config="",
         use_cuda=False,

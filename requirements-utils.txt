@@ -10,4 +10,8 @@ soundfile
 
 mosestokenizer
 indic-nlp-library
-sentence_tokenize
+mosestokenizer>=1.2.1
+sacremoses>=0.0.53
+subword-nmt>=0.3.8
+fairseq>=0.12.2
+xformers>=0.0.16

@@ -43,8 +43,11 @@ TTS_SUPPORTED_LANGUAGES = {
     'te' : "Telugu - తెలుగు",
 }
 
-INDIC_TTS_SUPPORTED_LANGUAGES = ["as", "hi", "mr", "ta", "bn", "kn", "or", "te", "gu", "ml", "pa"]
+INDIC_Trans_SUPPORTED_LANGUAGES = [
+    "as", "hi", "mr", "ta", "bn", "kn", "or", "te", "gu", "ml", "pa"
+    ]
 
+# Loading TTS Models
 models = {}
 for lang in TTS_SUPPORTED_LANGUAGES:
     models[lang]  = Synthesizer(
@@ -76,31 +79,43 @@ api.add_middleware(
 
 @api.get("/")
 def homepage():
-    return "Y4J System is live"
+    result = {
+        "success": True,
+        "message": "Welcome to Y4J System",
+    }
+    return result
 
-@api.get("/supported_languages")
+
+@api.get("/tts/supported_languages")
 def get_supported_languages():
-    return TTS_SUPPORTED_LANGUAGES
+    result  = {
+        "success": True,
+        "message": "Supported languages",
+        "data": TTS_SUPPORTED_LANGUAGES
+    }
+    return result
 
-
-@api.post("/")
-async def batch_tts(request: TTSRequest, response: Response):
-    return engine.infer_from_request(request)
-
-# Indic Trans
-
+# Schema for translation
 class requestSchemaTargetTranslate(BaseModel):
     data: str
     targetLan: str
     currLan: str
 
-
 class requestSchemaAllTranslate(BaseModel):
     data: str
 
 
+@api.get("/translation/supported_languages")
+def get_supported_languages():
+    result  = {
+        "success": True,
+        "message": "Supported languages",
+        "data" : INDIC_Trans_SUPPORTED_LANGUAGES
+    }
+    return result
+
 # Target Language Translation
-@api.get("/targetTranslate")
+@api.post("/translation/single")
 async def targetTranslate(request: requestSchemaTargetTranslate):
     request = request.dict()
 
@@ -118,9 +133,8 @@ async def targetTranslate(request: requestSchemaTargetTranslate):
     # Return the response
     return result
 
-
 # All Language Translation at once
-@api.get("/allTranslate")
+@api.post("/translation")
 async def allTranslate(request: requestSchemaAllTranslate):
     request = request.dict()
 
@@ -144,19 +158,47 @@ async def allTranslate(request: requestSchemaAllTranslate):
     }
 
     # Translate the data in all the target languages
-    for lang in INDIC_TTS_SUPPORTED_LANGUAGES:
+    for lang in INDIC_Trans_SUPPORTED_LANGUAGES:
         result = en2indic_model.batch_translate(data, currLan, lang)
         res[lang] = result[0]
 
     # Standard return format
     result = {
         "success": True,
-        "message": "All Translation from " + currLan + " to " + str(INDIC_TTS_SUPPORTED_LANGUAGES),
+        "message": "All Translation from " + currLan + " to " + str(INDIC_Trans_SUPPORTED_LANGUAGES),
         "data": res,
     }
     # Return the response
     return result
 
+@api.post("/tts/single")
+async def batch_tts(request: TTSRequest, response: Response):
+    return engine.infer_from_request(request)
+
+
+class singleTranslationTTSRequest(BaseModel):
+    data: str
+    gender: str
+    targetLan: str
+    currLan: str
+
+@api.post("/tts/translation/single")
+async def singleTranslationTTS(request: singleTranslationTTSRequest, response: Response):
+
+    # First translate the data 
+    data = request.data
+    data = [data]
+    currLan = request.currLan
+    targetLan = request.targetLan
+    translationResult = en2indic_model.batch_translate(data, currLan, targetLan)
+
+    TTSRequest = {
+        "input_text": translationResult[0],
+        "lang": targetLan,
+        "speaker_name": request.gender
+    }
+    return engine.infer_from_text(TTSRequest)
+
 if __name__ == "__main__":
     # uvicorn main:api --host 0.0.0.0 --port 5050 --log-level info
-    uvicorn.run("main:api", host="0.0.0.0", port=5050, log_level="info")
+    uvicorn.run("main:api", host="0.0.0.0", port=5050, log_level="info", reload=True, debug=True)

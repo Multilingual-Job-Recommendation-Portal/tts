@@ -2,3 +2,4 @@ menv
 models
 __pycache__
 .test02
+.venv
